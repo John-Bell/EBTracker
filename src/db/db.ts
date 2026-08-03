@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie';
 
 export interface Log {
-  id?: number;
+  id?: string;
   date: string; // ISO format YYYY-MM-DD
   type: string; // 'food' or 'water'
   synced: boolean;
@@ -9,7 +9,7 @@ export interface Log {
 }
 
 export interface FoodDictionaryItem {
-  id?: number;
+  id?: string;
   name: string;
 }
 
@@ -25,7 +25,23 @@ export const db = new Dexie('NutritionTrackerDB') as Dexie & {
 };
 
 db.version(1).stores({
-  logs: '++id, date, [date+type], synced',
-  foodDictionary: '++id, &name',
+  logs: 'id, date, [date+type], synced',
+  foodDictionary: 'id, &name',
   settings: 'id'
+});
+
+// Auto-generate UUIDs for logs if not provided
+db.logs.hook('creating', function (_primKey, obj) {
+  if (!obj.id) {
+    obj.id = crypto.randomUUID();
+    return obj.id;
+  }
+});
+
+// Auto-generate UUIDs for food dictionary items if not provided
+db.foodDictionary.hook('creating', function (_primKey, obj) {
+  if (!obj.id) {
+    obj.id = crypto.randomUUID();
+    return obj.id;
+  }
 });
