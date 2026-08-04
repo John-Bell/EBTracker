@@ -3,6 +3,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
+import { Button } from './components/Button'
+import { Card } from './components/Card'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -21,6 +23,15 @@ function App() {
             Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
           </p>
         </div>
+        <div className="flex gap-4 p-4">
+          <Button variant="primary">Primary Button</Button>
+          <Button variant="secondary">Secondary Button</Button>
+        </div>
+        <Card icon={<span>💧</span>}>
+          <h3 className="font-headline-md">Water Tracking</h3>
+          <p className="font-body-sm text-on-surface-variant">Here is a test card using our new styles.</p>
+        </Card>
+
         <button
           type="button"
           className="counter"
