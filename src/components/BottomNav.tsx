@@ -8,7 +8,7 @@ export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'set
               ? 'text-primary dark:text-secondary-fixed-dim font-semibold'
               : 'text-on-surface-variant/60 dark:text-surface-variant/60 active:bg-surface-variant/10'
           }`}
-          href="#"
+          href="#/"
         >
           <span className="material-symbols-outlined" style={activeTab === 'dashboard' ? { fontVariationSettings: "'FILL' 1" } : undefined}>
             dashboard
@@ -22,7 +22,7 @@ export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'set
               ? 'text-primary dark:text-secondary-fixed-dim font-semibold'
               : 'text-on-surface-variant/60 dark:text-surface-variant/60 active:bg-surface-variant/10'
           }`}
-          href="#"
+          href="#/log"
         >
           <span className="material-symbols-outlined" style={activeTab === 'log' ? { fontVariationSettings: "'FILL' 1" } : undefined}>
             add_circle
@@ -36,7 +36,7 @@ export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'set
               ? 'text-primary dark:text-secondary-fixed-dim font-semibold'
               : 'text-on-surface-variant/60 dark:text-surface-variant/60 active:bg-surface-variant/10'
           }`}
-          href="#"
+          href="#/settings"
         >
           <span className="material-symbols-outlined" style={activeTab === 'settings' ? { fontVariationSettings: "'FILL' 1" } : undefined}>
             settings
