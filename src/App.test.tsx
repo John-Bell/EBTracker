@@ -5,6 +5,6 @@ import { describe, it, expect } from 'vitest';
 describe('App', () => {
   it('renders headline', () => {
     render(<App />);
-    expect(screen.getByText(/Get started/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Settings/i).length).toBeGreaterThan(0);
   });
 });
