@@ -19,4 +19,26 @@
     -webkit-backdrop-filter: blur(20px);
     background-color: rgba(255, 255, 255, 0.7); /* semi-transparent white */
   }
+
+  .ios-inset-group {
+    margin: 0 16px 32px 16px;
+  }
+
+  .ios-list-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 54px;
+    height: 0.5px;
+    background-color: #C6C6C8;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
 }
