@@ -172,7 +172,12 @@ export function Dashboard() {
       </main>
 
       {/* FAB for adding food */}
-      <button className="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-all duration-200 z-50">
+      <button
+        onClick={() => {
+          window.location.hash = '#/log';
+        }}
+        className="fixed bottom-28 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-all duration-200 z-50"
+      >
         <span className="material-symbols-outlined text-[32px]">add</span>
       </button>
 

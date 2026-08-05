@@ -48,4 +48,15 @@ describe('App Routing', () => {
     });
     expect(screen.getByText(/Oatmeal with Berries/i)).toBeInTheDocument();
   });
+
+  it('switches to LogMeal page when hash changes to #/log', () => {
+    render(<App />);
+
+    act(() => {
+      window.location.hash = '#/log';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+
+    expect(screen.getByPlaceholderText('Search past meals...')).toBeInTheDocument();
+  });
 });
