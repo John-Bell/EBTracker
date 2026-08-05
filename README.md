@@ -30,3 +30,18 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## GitHub Pages Deployment
+
+If the GitHub Pages deployment workflow fails with a `404 Not Found` error:
+```
+Error: Failed to create deployment (status: 404) ... Ensure GitHub Pages has been enabled: https://github.com/John-Bell/EBTracker/settings/pages
+```
+
+This error occurs when the repository is not configured to deploy from GitHub Actions. To resolve this:
+
+1. Navigate to your repository on GitHub: **https://github.com/John-Bell/EBTracker**
+2. Click on **Settings** in the top navigation bar.
+3. In the left sidebar, click on **Pages** (under the *Code and automation* section).
+4. Under **Build and deployment** -> **Source**, change the dropdown selection from **"Deploy from a branch"** to **"GitHub Actions"**.
+5. Go to the **Actions** tab of your repository, select the failed run, and click **Re-run all jobs** (or push a new commit) to deploy successfully.
