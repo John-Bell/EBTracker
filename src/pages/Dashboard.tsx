@@ -1,25 +1,16 @@
-import { useEffect } from 'react';
 import { BottomNav } from '../components/BottomNav';
-import useStore from '../store/useStore';
+import { useDashboard } from '../hooks/useDashboard';
 
 export function Dashboard() {
-  const { calorieGoal, waterGoal, fetchSettings } = useStore();
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
-  // Hardcoded current values (to be connected to database in the future)
-  const currentWater = 750;
-  const consumedCalories = 1450;
-
-  // Calculate dynamic water progress
-  const waterRatio = Math.min(currentWater / waterGoal, 1);
-  const strokeDashoffset = (326.7 * (1 - waterRatio)).toFixed(1);
-
-  // Calculate dynamic calorie progress
-  const caloriesLeft = Math.max(0, calorieGoal - consumedCalories);
-  const caloriePercent = Math.min((consumedCalories / calorieGoal) * 100, 100).toFixed(0);
+  const {
+    calorieGoal,
+    waterGoal,
+    currentWater,
+    consumedCalories,
+    strokeDashoffset,
+    caloriesLeft,
+    caloriePercent,
+  } = useDashboard();
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] font-body-lg text-on-surface antialiased">
