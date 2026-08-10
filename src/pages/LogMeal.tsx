@@ -1,83 +1,28 @@
-import { useState, useRef, useEffect } from 'react';
 import { BottomNav } from '../components/BottomNav';
-
-interface SuggestionItem {
-  name: string;
-  calories: number;
-  mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
-  icon: string;
-}
-
-const MOCK_SUGGESTIONS: SuggestionItem[] = [
-  { name: 'Oatmeal with Berries', calories: 240, mealType: 'Breakfast', icon: 'history' },
-  { name: 'Oat Milk Latte', calories: 120, mealType: 'Snack', icon: 'restaurant' },
-];
+import { useLogMeal } from '../hooks/useLogMeal';
 
 export function LogMeal() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
-  const [itemName, setItemName] = useState('');
-  const [calories, setCalories] = useState<string>('');
-  const [mealType, setMealType] = useState<'Breakfast' | 'Lunch' | 'Dinner' | 'Snack'>('Breakfast');
-  const [isManualEntry, setIsManualEntry] = useState(false);
-
-  const caloriesInputRef = useRef<HTMLInputElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
-
-  // Filter suggestions based on query
-  const filteredSuggestions = searchQuery
-    ? MOCK_SUGGESTIONS.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
-
-  // Determine if popover should show
-  const showSuggestions =
-    isFocused &&
-    searchQuery.trim().length > 0 &&
-    !isManualEntry;
-
-  // Handle clicking outside of suggestions popover to close it
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
-        setIsFocused(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleSelectSuggestion = (item: SuggestionItem) => {
-    setItemName(item.name);
-    setCalories(item.calories.toString());
-    setMealType(item.mealType);
-    setSearchQuery(item.name);
-    setIsManualEntry(false);
-    setIsFocused(false);
-  };
-
-  const handleAddManually = () => {
-    setItemName(searchQuery);
-    setIsManualEntry(true);
-    setIsFocused(false);
-    // Focus calories input on next render
-    setTimeout(() => {
-      caloriesInputRef.current?.focus();
-    }, 50);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setItemName('');
-    setCalories('');
-    setIsManualEntry(false);
-  };
-
-  const handleSave = () => {
-    // Save functionality can be implemented/extended later, as requested by prompt
-    alert(`Saved food: ${itemName || searchQuery || 'Oatmeal'} (${calories || '0'} kcal) for ${mealType}`);
-  };
+  const {
+    searchQuery,
+    setSearchQuery,
+    setIsFocused,
+    itemName,
+    setItemName,
+    calories,
+    setCalories,
+    mealType,
+    setMealType,
+    isManualEntry,
+    setIsManualEntry,
+    caloriesInputRef,
+    popoverRef,
+    filteredSuggestions,
+    showSuggestions,
+    handleSelectSuggestion,
+    handleAddManually,
+    handleClearSearch,
+    handleSave,
+  } = useLogMeal();
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] font-body-lg text-on-surface antialiased overflow-x-hidden">
