@@ -93,7 +93,7 @@ export function LogMeal() {
         </div>
       </header>
 
-      <main className="px-margin-mobile pt-stack-gap pb-52 max-w-2xl mx-auto">
+      <main className="px-4 pt-5 pb-52 max-w-2xl mx-auto">
         {/* Search Section */}
         <div className="relative z-30 mb-8" ref={popoverRef}>
           <div className="flex items-center bg-white dark:bg-surface-container rounded-xl px-4 py-3 ios-shadow focus-within:ring-2 focus-within:ring-primary/20 transition-all">
@@ -166,7 +166,7 @@ export function LogMeal() {
 
         {/* Form Section */}
         <section className="space-y-6">
-          <div className="bg-white rounded-2xl p-card-padding ios-shadow">
+          <div className="bg-white rounded-2xl p-4 ios-shadow">
             <h2 className="font-label-caps text-outline mb-4 uppercase tracking-wider text-[11px]">Item Details</h2>
             <div className="space-y-5">
               {/* Item Name */}
@@ -206,7 +206,7 @@ export function LogMeal() {
           </div>
 
           {/* Meal Type Segmented Control */}
-          <div className="bg-white rounded-2xl p-card-padding ios-shadow">
+          <div className="bg-white rounded-2xl p-4 ios-shadow">
             <h2 className="font-label-caps text-outline mb-4 uppercase tracking-wider text-[11px]">Meal Type</h2>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 bg-[#E9E9EB]/50 p-1 rounded-xl">
               {(['Breakfast', 'Lunch', 'Dinner', 'Snack'] as const).map((type) => (
@@ -226,7 +226,7 @@ export function LogMeal() {
           </div>
 
           {/* Quick Log Card (Asymmetric Layout element) */}
-          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-card-padding flex items-start gap-4">
+          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 flex items-start gap-4">
             <div className="bg-primary/20 p-2 rounded-xl">
               <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                 info
