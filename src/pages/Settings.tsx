@@ -1,112 +1,30 @@
-import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
-import useStore from '../store/useStore';
-import { db } from '../db/db';
+import { useSettings } from '../hooks/useSettings';
+import { getSyncBtnClasses, getContainerClasses } from '../utils/settingsUtils';
 
 export function Settings() {
   const {
-    calorieGoal,
-    waterGoal,
-    endpointUrl,
-    headerName,
-    headerKey,
-    fetchSettings,
-    saveGoals,
-    saveConfig,
-  } = useStore();
-
-  const [localCalorieGoal, setLocalCalorieGoal] = useState('');
-  const [localWaterGoal, setLocalWaterGoal] = useState('');
-  const [localEndpointUrl, setLocalEndpointUrl] = useState('');
-  const [localHeaderName, setLocalHeaderName] = useState('');
-  const [localHeaderKey, setLocalHeaderKey] = useState('');
-
-  const [goalsSaved, setGoalsSaved] = useState(false);
-  const [configSaved, setConfigSaved] = useState(false);
-
-  const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>('idle');
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
-
-  useEffect(() => {
-    setLocalCalorieGoal(calorieGoal.toString());
-    setLocalWaterGoal(waterGoal.toString());
-    setLocalEndpointUrl(endpointUrl);
-    setLocalHeaderName(headerName);
-    setLocalHeaderKey(headerKey);
-  }, [calorieGoal, waterGoal, endpointUrl, headerName, headerKey]);
-
-  const handleSaveGoals = async () => {
-    try {
-      const cal = localCalorieGoal ? parseInt(localCalorieGoal, 10) : 2000;
-      const wat = localWaterGoal ? parseInt(localWaterGoal, 10) : 2500;
-      await saveGoals(cal, wat);
-      setGoalsSaved(true);
-      setTimeout(() => setGoalsSaved(false), 2000);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleSaveConfig = async () => {
-    try {
-      await saveConfig(localEndpointUrl, localHeaderName, localHeaderKey);
-      setConfigSaved(true);
-      setTimeout(() => setConfigSaved(false), 2000);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleClearCache = async () => {
-    if (window.confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
-      try {
-        await db.logs.clear();
-        await db.foodDictionary.clear();
-        await db.settings.clear();
-        await fetchSettings();
-        alert('Local cache cleared successfully.');
-      } catch (e) {
-        console.error(e);
-        alert('Failed to clear local cache.');
-      }
-    }
-  };
-
-  const handleSync = () => {
-    setSyncState('syncing');
-
-    setTimeout(() => {
-      setSyncState('synced');
-
-      setTimeout(() => {
-        setSyncState('idle');
-      }, 2000);
-    }, 1500);
-  };
-
-  const getSyncBtnClasses = () => {
-    const baseClasses = "mt-4 w-full h-[50px] rounded-xl font-semibold text-body-lg active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2";
-
-    if (syncState === 'syncing') {
-      return `${baseClasses} bg-secondary-fixed text-on-secondary-fixed opacity-80 cursor-not-allowed`;
-    }
-
-    if (syncState === 'synced') {
-      return `${baseClasses} bg-primary text-white`;
-    }
-
-    return `${baseClasses} bg-secondary-fixed text-on-secondary-fixed`;
-  };
-
-  const getContainerClasses = (inputId: string) => {
-    const base = "relative flex items-center min-h-[44px] px-4 ios-list-item transition-colors duration-200";
-    return focusedInput === inputId ? `${base} bg-surface-variant/5` : base;
-  };
+    localCalorieGoal,
+    setLocalCalorieGoal,
+    localWaterGoal,
+    setLocalWaterGoal,
+    localEndpointUrl,
+    setLocalEndpointUrl,
+    localHeaderName,
+    setLocalHeaderName,
+    localHeaderKey,
+    setLocalHeaderKey,
+    goalsSaved,
+    configSaved,
+    syncState,
+    focusedInput,
+    setFocusedInput,
+    handleSaveGoals,
+    handleSaveConfig,
+    handleClearCache,
+    handleSync,
+  } = useSettings();
 
   return (
     <div className="min-h-screen bg-[#F2F2F7]">
@@ -120,7 +38,7 @@ export function Settings() {
           </div>
           <div className="bg-surface-container-lowest rounded-xl shadow-[0px_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
             {/* Calorie Goal */}
-            <div className={getContainerClasses('calories')}>
+            <div className={getContainerClasses(focusedInput, 'calories')}>
               <div className="w-10 flex items-center text-primary">
                 <span className="material-symbols-outlined">nutrition</span>
               </div>
@@ -143,7 +61,7 @@ export function Settings() {
             </div>
 
             {/* Water Goal */}
-            <div className={getContainerClasses('water')}>
+            <div className={getContainerClasses(focusedInput, 'water')}>
               <div className="w-10 flex items-center text-primary">
                 <span className="material-symbols-outlined">water_drop</span>
               </div>
@@ -181,7 +99,7 @@ export function Settings() {
           </div>
           <div className="bg-surface-container-lowest rounded-xl shadow-[0px_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
             {/* Endpoint URL */}
-            <div className={getContainerClasses('endpoint')}>
+            <div className={getContainerClasses(focusedInput, 'endpoint')}>
               <div className="w-10 flex items-center text-primary">
                 <span className="material-symbols-outlined">dns</span>
               </div>
@@ -201,7 +119,7 @@ export function Settings() {
             </div>
 
             {/* Header Name */}
-            <div className={getContainerClasses('headerName')}>
+            <div className={getContainerClasses(focusedInput, 'headerName')}>
               <div className="w-10 flex items-center text-secondary">
                 <span className="material-symbols-outlined">label</span>
               </div>
@@ -221,7 +139,7 @@ export function Settings() {
             </div>
 
             {/* Header Key */}
-            <div className={getContainerClasses('headerKey')}>
+            <div className={getContainerClasses(focusedInput, 'headerKey')}>
               <div className="w-10 flex items-center text-tertiary">
                 <span className="material-symbols-outlined">key</span>
               </div>
@@ -269,7 +187,7 @@ export function Settings() {
 
             <div className="mt-6 flex flex-col gap-3">
               <button
-                className={getSyncBtnClasses()}
+                className={getSyncBtnClasses(syncState)}
                 onClick={handleSync}
                 disabled={syncState !== 'idle'}
               >
