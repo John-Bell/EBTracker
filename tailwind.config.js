@@ -67,6 +67,12 @@ export default {
         'label-caps': ['13px', { lineHeight: '18px', letterSpacing: '0.1px', fontWeight: '600' }],
         'caption': ['12px', { lineHeight: '16px', fontWeight: '400' }],
       },
+      spacing: {
+        'margin-mobile': '16px',
+        'gutter': '12px',
+        'card-padding': '16px',
+        'stack-gap': '20px',
+      },
       borderRadius: {
         'sm': '0.25rem',
         DEFAULT: '0.5rem',

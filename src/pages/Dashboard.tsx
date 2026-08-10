@@ -15,10 +15,10 @@ export function Dashboard() {
         </div>
       </header>
 
-      <main className="px-margin-mobile pt-stack-gap pb-32 max-w-2xl mx-auto space-y-stack-gap">
+      <main className="px-4 pt-5 pb-32 max-w-2xl mx-auto space-y-5">
         {/* Water Intake Section */}
         <section
-          className="bg-surface-container-lowest rounded-xl p-card-padding ios-shadow flex flex-col items-center transition-all duration-600 ease-out"
+          className="bg-surface-container-lowest rounded-xl p-4 ios-shadow flex flex-col items-center transition-all duration-600 ease-out"
           style={{ opacity: 1, transform: 'translateY(0px)' }}
         >
           <div className="relative w-48 h-48">
@@ -52,7 +52,7 @@ export function Dashboard() {
               <span className="font-caption text-caption text-on-surface-variant">/ 2500 ml</span>
             </div>
           </div>
-          <div className="mt-6 flex w-full gap-gutter">
+          <div className="mt-6 flex w-full gap-3">
             <button className="flex-1 h-[50px] bg-surface-container-high rounded-xl text-primary font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
               <span className="material-symbols-outlined text-[20px]">water_drop</span>
               <span className="text-body-sm">+ Glass (250ml)</span>
@@ -66,7 +66,7 @@ export function Dashboard() {
 
         {/* Calories Summary Card */}
         <section
-          className="bg-surface-container-lowest rounded-xl p-card-padding ios-shadow transition-all duration-600 ease-out"
+          className="bg-surface-container-lowest rounded-xl p-4 ios-shadow transition-all duration-600 ease-out"
           style={{ opacity: 1, transform: 'translateY(0px)' }}
         >
           <div className="flex items-center justify-between mb-4">
@@ -106,7 +106,7 @@ export function Dashboard() {
           <h2 className="px-2 font-label-caps text-on-surface-variant/80 uppercase">Today's Log</h2>
           <div className="bg-surface-container-lowest rounded-xl overflow-hidden ios-shadow">
             {/* Breakfast */}
-            <div className="px-card-padding py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
+            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
               <div className="flex items-center gap-4">
                 <div>
                   <p className="font-label-caps text-primary text-caption uppercase mb-1">Breakfast</p>
@@ -122,7 +122,7 @@ export function Dashboard() {
             <div className="h-[0.5px] bg-outline-variant/30"></div>
 
             {/* Lunch */}
-            <div className="px-card-padding py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
+            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
               <div className="flex items-center gap-4">
                 <div>
                   <p className="font-label-caps text-primary text-caption uppercase mb-1">Lunch</p>
@@ -138,7 +138,7 @@ export function Dashboard() {
             <div className="h-[0.5px] bg-outline-variant/30"></div>
 
             {/* Dinner */}
-            <div className="px-card-padding py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
+            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
               <div className="flex items-center gap-4">
                 <div>
                   <p className="font-label-caps text-primary text-caption uppercase mb-1">Dinner</p>
@@ -154,7 +154,7 @@ export function Dashboard() {
             <div className="h-[0.5px] bg-outline-variant/30"></div>
 
             {/* Snacks */}
-            <div className="px-card-padding py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
+            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
               <div className="flex items-center gap-4">
                 <div>
                   <p className="font-label-caps text-primary text-caption uppercase mb-1">Snacks</p>
