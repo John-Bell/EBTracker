@@ -1,6 +1,26 @@
+import { useEffect } from 'react';
 import { BottomNav } from '../components/BottomNav';
+import useStore from '../store/useStore';
 
 export function Dashboard() {
+  const { calorieGoal, waterGoal, fetchSettings } = useStore();
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  // Hardcoded current values (to be connected to database in the future)
+  const currentWater = 750;
+  const consumedCalories = 1450;
+
+  // Calculate dynamic water progress
+  const waterRatio = Math.min(currentWater / waterGoal, 1);
+  const strokeDashoffset = (326.7 * (1 - waterRatio)).toFixed(1);
+
+  // Calculate dynamic calorie progress
+  const caloriesLeft = Math.max(0, calorieGoal - consumedCalories);
+  const caloriePercent = Math.min((consumedCalories / calorieGoal) * 100, 100).toFixed(0);
+
   return (
     <div className="min-h-screen bg-[#F2F2F7] font-body-lg text-on-surface antialiased">
       {/* TopAppBar */}
@@ -42,14 +62,14 @@ export function Dashboard() {
                 r="52"
                 stroke="currentColor"
                 strokeDasharray="326.7"
-                strokeDashoffset="228.7"
+                strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 strokeWidth="10"
               ></circle>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-headline-lg text-on-surface">750</span>
-              <span className="font-caption text-caption text-on-surface-variant">/ 2500 ml</span>
+              <span className="font-display text-headline-lg text-on-surface">{currentWater}</span>
+              <span className="font-caption text-caption text-on-surface-variant">/ {waterGoal} ml</span>
             </div>
           </div>
           <div className="mt-6 flex w-full gap-3">
@@ -80,21 +100,21 @@ export function Dashboard() {
           </div>
           <div className="flex items-end justify-between mb-2">
             <div className="space-y-1">
-              <span className="font-display text-headline-lg text-on-surface">1,450</span>
+              <span className="font-display text-headline-lg text-on-surface">{consumedCalories.toLocaleString()}</span>
               <span className="block font-caption text-caption text-on-surface-variant">kcal consumed</span>
             </div>
             <div className="text-right">
               <span className="font-body-lg text-on-surface">
-                750 <span className="text-on-surface-variant text-body-sm">left</span>
+                {caloriesLeft.toLocaleString()} <span className="text-on-surface-variant text-body-sm">left</span>
               </span>
             </div>
           </div>
           <div className="w-full h-3 bg-surface-container rounded-full overflow-hidden">
-            <div className="h-full bg-tertiary rounded-full" style={{ width: '66%' }}></div>
+            <div className="h-full bg-tertiary rounded-full" style={{ width: `${caloriePercent}%` }}></div>
           </div>
           <div className="mt-2 flex justify-between font-caption text-caption text-on-surface-variant/60">
             <span>0 kcal</span>
-            <span>Goal: 2,200 kcal</span>
+            <span>Goal: {calorieGoal.toLocaleString()} kcal</span>
           </div>
         </section>
 

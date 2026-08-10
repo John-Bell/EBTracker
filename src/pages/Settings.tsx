@@ -1,10 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
+import useStore from '../store/useStore';
+import { db } from '../db/db';
 
 export function Settings() {
+  const {
+    calorieGoal,
+    waterGoal,
+    endpointUrl,
+    headerName,
+    headerKey,
+    fetchSettings,
+    saveGoals,
+    saveConfig,
+  } = useStore();
+
+  const [localCalorieGoal, setLocalCalorieGoal] = useState('');
+  const [localWaterGoal, setLocalWaterGoal] = useState('');
+  const [localEndpointUrl, setLocalEndpointUrl] = useState('');
+  const [localHeaderName, setLocalHeaderName] = useState('');
+  const [localHeaderKey, setLocalHeaderKey] = useState('');
+
+  const [goalsSaved, setGoalsSaved] = useState(false);
+  const [configSaved, setConfigSaved] = useState(false);
+
   const [syncState, setSyncState] = useState<'idle' | 'syncing' | 'synced'>('idle');
   const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  useEffect(() => {
+    setLocalCalorieGoal(calorieGoal.toString());
+    setLocalWaterGoal(waterGoal.toString());
+    setLocalEndpointUrl(endpointUrl);
+    setLocalHeaderName(headerName);
+    setLocalHeaderKey(headerKey);
+  }, [calorieGoal, waterGoal, endpointUrl, headerName, headerKey]);
+
+  const handleSaveGoals = async () => {
+    try {
+      const cal = localCalorieGoal ? parseInt(localCalorieGoal, 10) : 2000;
+      const wat = localWaterGoal ? parseInt(localWaterGoal, 10) : 2500;
+      await saveGoals(cal, wat);
+      setGoalsSaved(true);
+      setTimeout(() => setGoalsSaved(false), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    try {
+      await saveConfig(localEndpointUrl, localHeaderName, localHeaderKey);
+      setConfigSaved(true);
+      setTimeout(() => setConfigSaved(false), 2000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleClearCache = async () => {
+    if (window.confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
+      try {
+        await db.logs.clear();
+        await db.foodDictionary.clear();
+        await db.settings.clear();
+        await fetchSettings();
+        alert('Local cache cleared successfully.');
+      } catch (e) {
+        console.error(e);
+        alert('Failed to clear local cache.');
+      }
+    }
+  };
 
   const handleSync = () => {
     setSyncState('syncing');
@@ -54,12 +125,15 @@ export function Settings() {
                 <span className="material-symbols-outlined">nutrition</span>
               </div>
               <div className="flex-1 flex flex-col py-3">
-                <label className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Calorie Goal</label>
+                <label htmlFor="calorie-goal-input" className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Calorie Goal</label>
                 <div className="flex items-center">
                   <input
+                    id="calorie-goal-input"
                     className="w-full bg-transparent border-none p-0 focus:ring-0 text-body-lg placeholder:text-outline-variant focus:outline-none"
                     placeholder="2000"
                     type="number"
+                    value={localCalorieGoal}
+                    onChange={(e) => setLocalCalorieGoal(e.target.value)}
                     onFocus={() => setFocusedInput('calories')}
                     onBlur={() => setFocusedInput(null)}
                   />
@@ -74,12 +148,15 @@ export function Settings() {
                 <span className="material-symbols-outlined">water_drop</span>
               </div>
               <div className="flex-1 flex flex-col py-3">
-                <label className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Water Goal</label>
+                <label htmlFor="water-goal-input" className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Water Goal</label>
                 <div className="flex items-center">
                   <input
+                    id="water-goal-input"
                     className="w-full bg-transparent border-none p-0 focus:ring-0 text-body-lg placeholder:text-outline-variant focus:outline-none"
                     placeholder="2500"
                     type="number"
+                    value={localWaterGoal}
+                    onChange={(e) => setLocalWaterGoal(e.target.value)}
                     onFocus={() => setFocusedInput('water')}
                     onBlur={() => setFocusedInput(null)}
                   />
@@ -89,8 +166,11 @@ export function Settings() {
             </div>
           </div>
 
-          <button className="mt-4 w-full h-[50px] bg-primary text-on-primary rounded-xl font-semibold text-body-lg active:scale-[0.98] transition-all duration-150 shadow-[0px_4px_12px_rgba(0,88,188,0.2)]">
-            Save Goals
+          <button
+            onClick={handleSaveGoals}
+            className="mt-4 w-full h-[50px] bg-primary text-on-primary rounded-xl font-semibold text-body-lg active:scale-[0.98] transition-all duration-150 shadow-[0px_4px_12px_rgba(0,88,188,0.2)]"
+          >
+            {goalsSaved ? 'Goals Saved!' : 'Save Goals'}
           </button>
         </div>
 
@@ -106,11 +186,14 @@ export function Settings() {
                 <span className="material-symbols-outlined">dns</span>
               </div>
               <div className="flex-1 flex flex-col py-3">
-                <label className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Endpoint URL</label>
+                <label htmlFor="endpoint-url-input" className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Endpoint URL</label>
                 <input
+                  id="endpoint-url-input"
                   className="w-full bg-transparent border-none p-0 focus:ring-0 text-body-lg placeholder:text-outline-variant focus:outline-none"
                   placeholder="https://api.ebtracker.io/v1"
                   type="text"
+                  value={localEndpointUrl}
+                  onChange={(e) => setLocalEndpointUrl(e.target.value)}
                   onFocus={() => setFocusedInput('endpoint')}
                   onBlur={() => setFocusedInput(null)}
                 />
@@ -123,11 +206,14 @@ export function Settings() {
                 <span className="material-symbols-outlined">label</span>
               </div>
               <div className="flex-1 flex flex-col py-3">
-                <label className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Header Name</label>
+                <label htmlFor="header-name-input" className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Header Name</label>
                 <input
+                  id="header-name-input"
                   className="w-full bg-transparent border-none p-0 focus:ring-0 text-body-lg placeholder:text-outline-variant focus:outline-none"
                   placeholder="X-Custom-Auth"
                   type="text"
+                  value={localHeaderName}
+                  onChange={(e) => setLocalHeaderName(e.target.value)}
                   onFocus={() => setFocusedInput('headerName')}
                   onBlur={() => setFocusedInput(null)}
                 />
@@ -140,11 +226,14 @@ export function Settings() {
                 <span className="material-symbols-outlined">key</span>
               </div>
               <div className="flex-1 flex flex-col py-3">
-                <label className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Header Key</label>
+                <label htmlFor="header-key-input" className="text-[13px] font-semibold text-on-surface-variant mb-0.5">Header Key</label>
                 <input
+                  id="header-key-input"
                   className="w-full bg-transparent border-none p-0 focus:ring-0 text-body-lg placeholder:text-outline-variant focus:outline-none"
                   type="password"
-                  defaultValue="••••••••••••"
+                  placeholder="Enter key"
+                  value={localHeaderKey}
+                  onChange={(e) => setLocalHeaderKey(e.target.value)}
                   onFocus={() => setFocusedInput('headerKey')}
                   onBlur={() => setFocusedInput(null)}
                 />
@@ -152,8 +241,11 @@ export function Settings() {
             </div>
           </div>
 
-          <button className="mt-6 w-full h-[50px] bg-primary text-on-primary rounded-xl font-semibold text-body-lg active:scale-[0.98] transition-all duration-150 shadow-[0px_4px_12px_rgba(0,88,188,0.2)]">
-            Save Configuration
+          <button
+            onClick={handleSaveConfig}
+            className="mt-6 w-full h-[50px] bg-primary text-on-primary rounded-xl font-semibold text-body-lg active:scale-[0.98] transition-all duration-150 shadow-[0px_4px_12px_rgba(0,88,188,0.2)]"
+          >
+            {configSaved ? 'Configuration Saved!' : 'Save Configuration'}
           </button>
         </div>
 
@@ -224,7 +316,10 @@ export function Settings() {
               </div>
               <span className="text-body-lg text-on-surface-variant">14.2 MB</span>
             </div>
-            <div className="relative flex items-center justify-between min-h-[44px] px-4 ios-list-item cursor-pointer active:bg-surface-variant/10 transition-colors">
+            <div
+              onClick={handleClearCache}
+              className="relative flex items-center justify-between min-h-[44px] px-4 ios-list-item cursor-pointer active:bg-surface-variant/10 transition-colors"
+            >
               <div className="flex items-center gap-4">
                 <span className="material-symbols-outlined text-error">delete_forever</span>
                 <span className="text-body-lg text-error">Clear Local Cache</span>
