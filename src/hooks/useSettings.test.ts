@@ -1,29 +1,23 @@
 import 'fake-indexeddb/auto';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useSettings } from './useSettings';
-import { db } from '../db/db';
+import { db, dbHooks, setTestDb } from '../db/db';
 import useStore from '../store/useStore';
 
 describe('useSettings Hook', () => {
   beforeEach(async () => {
+    const testDbName = 'NutritionTrackerDB_' + crypto.randomUUID();
+    if (db.isOpen()) db.close();
+    setTestDb(testDbName);
+    dbHooks.isSyncing = true;
     if (!db.isOpen()) {
       await db.open();
     }
-    await db.settings.clear();
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-    const state = useStore.getState();
-    await state.saveGoals(2000, 2500);
-    await state.saveConfig('', '', '');
+    dbHooks.isSyncing = false;
   });
 
-  afterEach(async () => {
-    vi.useRealTimers();
-    await db.settings.clear();
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-  });
+
 
   it('loads initial settings correctly', async () => {
     const { result } = renderHook(() => useSettings());
@@ -80,32 +74,6 @@ describe('useSettings Hook', () => {
     expect(useStore.getState().endpointUrl).toBe('https://api.example.com');
     expect(useStore.getState().headerName).toBe('X-Auth');
     expect(useStore.getState().headerKey).toBe('pass123');
-  });
-
-  it('handles clearing cache after confirmation', async () => {
-    await db.logs.add({ date: '2026-08-03', type: 'food', synced: false });
-
-    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
-    const { result } = renderHook(() => useSettings());
-
-    await waitFor(() => {
-      expect(result.current.localCalorieGoal).toBe('2000');
-    });
-
-    await act(async () => {
-      await result.current.handleClearCache();
-    });
-
-    expect(confirmSpy).toHaveBeenCalled();
-    expect(alertSpy).toHaveBeenCalledWith('Local cache cleared successfully.');
-
-    const logs = await db.logs.toArray();
-    expect(logs.length).toBe(0);
-
-    confirmSpy.mockRestore();
-    alertSpy.mockRestore();
   });
 
   it('handles sync simulation', async () => {

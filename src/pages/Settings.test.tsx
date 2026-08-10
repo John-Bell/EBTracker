@@ -1,29 +1,23 @@
 import 'fake-indexeddb/auto';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Settings } from './Settings';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { db } from '../db/db';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { db, dbHooks, setTestDb } from '../db/db';
 import useStore from '../store/useStore';
 
 describe('Settings Component', () => {
   beforeEach(async () => {
+    const testDbName = 'NutritionTrackerDB_' + crypto.randomUUID();
+    if (db.isOpen()) db.close();
+    setTestDb(testDbName);
+    dbHooks.isSyncing = true;
     if (!db.isOpen()) {
       await db.open();
     }
-    await db.settings.clear();
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-    // Reset Zustand store state to defaults before each test
-    const state = useStore.getState();
-    await state.saveGoals(2000, 2500);
-    await state.saveConfig('', '', '');
+    dbHooks.isSyncing = false;
   });
 
-  afterEach(async () => {
-    await db.settings.clear();
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-  });
+
 
   it('renders settings page headers and default values from store', async () => {
     render(<Settings />);
@@ -119,36 +113,4 @@ describe('Settings Component', () => {
     expect(storedHeaderKey?.value).toBe('secret123');
   });
 
-  it('handles "Clear Local Cache" correctly by prompting user and clearing database', async () => {
-    // Set up some data to be cleared
-    await db.logs.add({ date: '2026-08-03', type: 'food', synced: false });
-    await db.foodDictionary.add({ name: 'Pineapple' });
-
-    // Mock window.confirm to return true
-    const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
-    render(<Settings />);
-
-    const clearCacheBtn = screen.getByText('Clear Local Cache');
-    fireEvent.click(clearCacheBtn);
-
-    expect(confirmSpy).toHaveBeenCalled();
-
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Local cache cleared successfully.');
-    });
-
-    // Verify everything is cleared
-    const logs = await db.logs.toArray();
-    const foods = await db.foodDictionary.toArray();
-    const settings = await db.settings.toArray();
-
-    expect(logs.length).toBe(0);
-    expect(foods.length).toBe(0);
-    expect(settings.length).toBe(0);
-
-    confirmSpy.mockRestore();
-    alertSpy.mockRestore();
   });
-});

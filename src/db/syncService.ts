@@ -1,0 +1,351 @@
+import { db, dbHooks, getSanitizedDbData } from './db';
+import useStore from '../store/useStore';
+
+/**
+ * Derives a key from a passphrase using PBKDF2
+ */
+async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
+    const encoder = new TextEncoder();
+    const passphraseKey = await window.crypto.subtle.importKey(
+        'raw',
+        encoder.encode(passphrase),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+    );
+
+    return window.crypto.subtle.deriveKey(
+        {
+            name: 'PBKDF2',
+            salt: salt as BufferSource,
+            iterations: 600000,
+            hash: 'SHA-256',
+        },
+        passphraseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+    );
+}
+
+// ==========================================
+// PART 1: Web Crypto Utilities
+// ==========================================
+
+export async function encryptData(data: any, passphrase: string): Promise<Blob> {
+    const encoder = new TextEncoder();
+    const encodedData = encoder.encode(JSON.stringify(data));
+
+    // Generate random salt and IV
+    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+    const key = await deriveKey(passphrase, salt);
+
+    const encryptedBuffer = await window.crypto.subtle.encrypt(
+        {
+            name: 'AES-GCM',
+            iv: iv as BufferSource,
+        },
+        key,
+        encodedData as BufferSource
+    );
+
+    // Concatenate salt (16 bytes), iv (12 bytes), and ciphertext
+    return new Blob([salt, iv, encryptedBuffer], { type: 'application/octet-stream' });
+}
+
+export async function decryptData(buffer: ArrayBuffer, passphrase: string): Promise<any> {
+    if (buffer.byteLength < 28) {
+        throw new Error('Invalid encrypted data format.');
+    }
+
+    const salt = new Uint8Array(buffer.slice(0, 16));
+    const iv = new Uint8Array(buffer.slice(16, 28));
+    const ciphertext = buffer.slice(28);
+
+    const key = await deriveKey(passphrase, salt);
+
+    try {
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            {
+                name: 'AES-GCM',
+                iv: iv as BufferSource,
+            },
+            key,
+            ciphertext as BufferSource
+        );
+
+        const decoder = new TextDecoder();
+        const decryptedString = decoder.decode(decryptedBuffer);
+
+        return JSON.parse(decryptedString);
+    } catch (error: any) {
+        throw new Error('Decryption failed. Incorrect passphrase or corrupted data.', { cause: error });
+    }
+}
+
+// ==========================================
+// PART 2: Merge Logic
+// ==========================================
+
+export async function mergeData(cloudData: Record<string, any[]>): Promise<boolean> {
+    let hasLocalChanges = false;
+    const tables = ['logs', 'foodDictionary', 'settings'];
+    const tableList = [db.logs, db.foodDictionary, db.settings, db.deletedRows];
+
+    dbHooks.isSyncing = true;
+    await db.transaction('rw', tableList, async () => {
+        // Step A: Pre-load local tombstones
+        const localTombstones = await db.deletedRows.toArray();
+        const tombstoneMap = new Map(localTombstones.map((r: any) => [r.id, r]));
+
+        // Step B: Merge Graveyards
+        const cloudTombstones = cloudData['deletedRows'] || [];
+        const tombstonesToPut: any[] = [];
+
+        for (let i = 0; i < cloudTombstones.length; i++) {
+            const cloudTombstone = cloudTombstones[i];
+            const localTombstone = tombstoneMap.get(cloudTombstone.id);
+            if (!localTombstone || cloudTombstone.deletedAt > localTombstone.deletedAt) {
+                tombstonesToPut.push(cloudTombstone);
+                tombstoneMap.set(cloudTombstone.id, cloudTombstone);
+            }
+        }
+
+        if (tombstonesToPut.length > 0) {
+            await db.deletedRows.bulkPut(tombstonesToPut);
+        }
+
+        // Step C: Execute Remote Deletes
+        const deletesByTable = new Map<string, any[]>();
+        for (let i = 0; i < tombstonesToPut.length; i++) {
+            const tombstone = tombstonesToPut[i];
+            if (!deletesByTable.has(tombstone.tableName)) {
+                deletesByTable.set(tombstone.tableName, []);
+            }
+            deletesByTable.get(tombstone.tableName)!.push(tombstone);
+        }
+
+        for (const [tableName, tombstones] of deletesByTable.entries()) {
+            if (tables.includes(tableName)) {
+                const dexieTable = (db as any)[tableName];
+                const idsToCheck = tombstones.map((t: any) => t.id);
+                const localRecords = await dexieTable.bulkGet(idsToCheck);
+
+                const idsToDelete: string[] = [];
+                for (let i = 0; i < tombstones.length; i++) {
+                    const localRecord = localRecords[i];
+                    if (localRecord) {
+                        const localUpdatedAt = localRecord.updatedAt || 0;
+                        if (tombstones[i].deletedAt >= localUpdatedAt) {
+                            idsToDelete.push(tombstones[i].id);
+                        }
+                    }
+                }
+
+                if (idsToDelete.length > 0) {
+                    await dexieTable.bulkDelete(idsToDelete);
+                }
+            }
+        }
+
+        // Step D: Process Standard Tables
+        for (let t = 0; t < tables.length; t++) {
+            const table = tables[t];
+            const dexieTable = (db as any)[table];
+            const localRecords = await dexieTable.toArray();
+            const cloudRecords = cloudData[table] || [];
+
+            const localMap = new Map(localRecords.map((r: any) => [r.id, r]));
+
+            const recordsToPut: any[] = [];
+
+            for (let i = 0; i < cloudRecords.length; i++) {
+                const cloudRecord = cloudRecords[i] as any;
+                const cloudTime = cloudRecord.updatedAt || 0;
+
+                const tombstone = tombstoneMap.get(cloudRecord.id);
+
+                if (tombstone) {
+                    if (cloudTime > tombstone.deletedAt) {
+                        // Resurrected
+                        recordsToPut.push(cloudRecord);
+                        await db.deletedRows.delete(tombstone.id);
+                        tombstoneMap.delete(tombstone.id);
+                        hasLocalChanges = true;
+                    }
+                    // else: tombstone is newer, ignore the cloudRecord entirely
+                } else {
+                    const localRecord = localMap.get(cloudRecord.id);
+
+                    if (!localRecord) {
+                        // Record exists in cloud but not local -> Add it
+                        recordsToPut.push(cloudRecord);
+                    } else {
+                        // Record exists in both -> Compare updatedAt
+                        const localTime = (localRecord as any).updatedAt || 0;
+
+                        if (cloudTime > localTime) {
+                            // Cloud is newer -> Update local
+                            recordsToPut.push(cloudRecord);
+                        } else if (localTime > cloudTime) {
+                            // Local is newer -> Mark for export
+                            hasLocalChanges = true;
+                        }
+                    }
+                }
+                localMap.delete(cloudRecord.id);
+            }
+
+            if (recordsToPut.length > 0) {
+                await dexieTable.bulkPut(recordsToPut);
+            }
+
+            // Any remaining in localMap are local-only -> Mark for export
+            if (localMap.size > 0) {
+                hasLocalChanges = true;
+            }
+        }
+    });
+
+    dbHooks.isSyncing = false;
+    return hasLocalChanges;
+}
+
+// ==========================================
+// PART 3: Smart Sync Workflow
+// ==========================================
+
+async function cleanGraveyard() {
+    try {
+        const ninetyDaysAgo = Date.now() - 90 * 24 * 60 * 60 * 1000;
+        const oldRecords = await db.deletedRows.where('deletedAt').below(ninetyDaysAgo).toArray();
+        if (oldRecords.length > 0) {
+            const idsToDelete = oldRecords.map(r => r.id);
+            await db.deletedRows.bulkDelete(idsToDelete);
+            console.log(`Cleaned up ${idsToDelete.length} old tombstones from the graveyard.`);
+        }
+    } catch (error: any) {
+        console.error('Failed to clean graveyard', error);
+    }
+}
+
+export const remoteSyncService = {
+    _syncTimeout: null as ReturnType<typeof setTimeout> | null,
+
+    autoSync() {
+        if (this._syncTimeout) {
+            clearTimeout(this._syncTimeout);
+        }
+        this._syncTimeout = setTimeout(async () => {
+            const status = useStore.getState().syncStatus;
+            if (status === 'connected') {
+                await this.sync();
+            }
+        }, 2000);
+    },
+
+    async reconnect() {
+        // Just try to sync once on boot
+        try {
+            await this.sync();
+        } catch {
+            // ignore
+        }
+    },
+
+    async sync() {
+        try {
+            await cleanGraveyard();
+            const storeState = useStore.getState();
+
+            const syncUrl = storeState.endpointUrl;
+            const syncHeaderName = storeState.headerName;
+            const syncHeaderKey = storeState.headerKey;
+            const syncPassphrase = storeState.syncPassphrase;
+
+            if (!syncUrl || !syncPassphrase) {
+                console.warn('Sync aborted: syncUrl or syncPassphrase is not configured.');
+                useStore.getState().setSyncStatus('disconnected');
+                return false;
+            }
+
+            // 1. Check Version
+            let serverLastUpdated = 0;
+            const customHeaders: Record<string, string> = {};
+            if (syncHeaderName && syncHeaderKey) {
+                customHeaders[syncHeaderName] = syncHeaderKey;
+            }
+
+            const versionResponse = await fetch(`${syncUrl}/version`, { headers: customHeaders, cache: 'no-store' });
+            if (versionResponse.ok) {
+                const versionData = await versionResponse.json();
+                serverLastUpdated = versionData.lastUpdated || 0;
+            } else if (versionResponse.status === 404) {
+                serverLastUpdated = 0;
+            } else {
+                throw new Error(`Failed to check version: ${versionResponse.status} ${versionResponse.statusText}`);
+            }
+
+            const localLastSynced = storeState.lastSynced || 0;
+
+            let hasLocalChanges = false;
+
+            // 2. Pull & Merge (If Needed)
+            if (serverLastUpdated > localLastSynced) {
+                const pullResponse = await fetch(syncUrl, { headers: customHeaders, cache: 'no-store' });
+                if (pullResponse.ok) {
+                    const buffer = await pullResponse.arrayBuffer();
+                    if (buffer.byteLength > 0) {
+                        const decryptedData = await decryptData(buffer, syncPassphrase);
+                        // Merge data to Dexie
+                        hasLocalChanges = await mergeData(decryptedData);
+                    }
+                } else if (pullResponse.status !== 404) {
+                    throw new Error(`Failed to pull data: ${pullResponse.status} ${pullResponse.statusText}`);
+                }
+            } else {
+                hasLocalChanges = true;
+            }
+
+            // 3. Extract full database and 4. Encrypt & Push (If Needed)
+            if (hasLocalChanges || serverLastUpdated === 0) {
+                // 3. Extract full database
+                const allData = await getSanitizedDbData();
+
+                // 4. Encrypt & Push
+                const encryptedBlob = await encryptData(allData, syncPassphrase);
+
+                const pushResponse = await fetch(syncUrl, {
+                    method: 'POST',
+                    headers: {
+                        ...customHeaders,
+                        'Content-Type': 'application/octet-stream',
+                    },
+                    body: encryptedBlob,
+                    cache: 'no-store'
+                });
+
+                if (!pushResponse.ok) {
+                    throw new Error(`Failed to push data: ${pushResponse.status} ${pushResponse.statusText}`);
+                }
+            }
+
+            // 5. Update State
+            const now = Date.now();
+            await db.settings.put({ id: 'lastSynced', value: now, updatedAt: now });
+
+            useStore.getState().setSyncStatus('connected');
+            useStore.getState().setLastSynced(now);
+
+            return true;
+        } catch (error: any) {
+            console.error('Sync failed:', error);
+            // We intentionally do not set status to 'disconnected' here.
+            // If the failure was just a temporary network drop, we don't want to
+            // break the autoSync background loop which only triggers if 'connected'
+            throw error;
+        }
+    }
+};

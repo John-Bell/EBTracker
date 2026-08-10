@@ -7,10 +7,16 @@ interface StoreState {
   endpointUrl: string;
   headerName: string;
   headerKey: string;
+  syncStatus: 'connected' | 'disconnected';
+  lastSynced: number;
+  syncPassphrase?: string;
+
+  setSyncStatus: (status: 'connected' | 'disconnected') => void;
+  setLastSynced: (timestamp: number) => void;
 
   fetchSettings: () => Promise<void>;
   saveGoals: (calorieGoal: number, waterGoal: number) => Promise<void>;
-  saveConfig: (endpointUrl: string, headerName: string, headerKey: string) => Promise<void>;
+  saveConfig: (endpointUrl: string, headerName: string, headerKey: string, syncPassphrase?: string) => Promise<void>;
 
   addFoodLog: (log: any) => Promise<void>;
   addWaterLog: (volume: number) => Promise<void>;
@@ -26,6 +32,11 @@ const useStore = create<StoreState>((set) => ({
   endpointUrl: '',
   headerName: '',
   headerKey: '',
+  syncStatus: 'disconnected',
+  lastSynced: 0,
+
+  setSyncStatus: (status) => set({ syncStatus: status }),
+  setLastSynced: (timestamp) => set({ lastSynced: timestamp }),
 
   fetchSettings: async () => {
     try {
@@ -41,6 +52,8 @@ const useStore = create<StoreState>((set) => ({
         endpointUrl: settingsMap['endpointUrl'] || '',
         headerName: settingsMap['headerName'] || '',
         headerKey: settingsMap['headerKey'] || '',
+        syncPassphrase: settingsMap['syncPassphrase'] || '',
+        lastSynced: settingsMap['lastSynced'] || 0,
       });
     } catch (error) {
       console.error('Failed to fetch settings from DB', error);
@@ -58,12 +71,15 @@ const useStore = create<StoreState>((set) => ({
     }
   },
 
-  saveConfig: async (endpointUrl, headerName, headerKey) => {
+  saveConfig: async (endpointUrl, headerName, headerKey, syncPassphrase) => {
     try {
       await db.settings.put({ id: 'endpointUrl', value: endpointUrl });
       await db.settings.put({ id: 'headerName', value: headerName });
       await db.settings.put({ id: 'headerKey', value: headerKey });
-      set({ endpointUrl, headerName, headerKey });
+      if (syncPassphrase !== undefined) {
+         await db.settings.put({ id: 'syncPassphrase', value: syncPassphrase });
+      }
+      set({ endpointUrl, headerName, headerKey, ...(syncPassphrase !== undefined ? { syncPassphrase } : {}) });
     } catch (error) {
       console.error('Failed to save config', error);
       throw error;
