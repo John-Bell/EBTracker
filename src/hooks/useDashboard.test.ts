@@ -2,21 +2,24 @@ import 'fake-indexeddb/auto';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useDashboard } from './useDashboard';
-import { db } from '../db/db';
+import { db, dbHooks, setTestDb } from '../db/db';
 import useStore from '../store/useStore';
 
 describe('useDashboard Hook', () => {
   beforeEach(async () => {
+    const testDbName = 'NutritionTrackerDB_' + crypto.randomUUID();
+    setTestDb(testDbName);
+    dbHooks.isSyncing = true;
     if (!db.isOpen()) {
       await db.open();
     }
-    await db.settings.clear();
-    const state = useStore.getState();
-    await state.saveGoals(2000, 2500);
+    dbHooks.isSyncing = false;
   });
 
   afterEach(async () => {
-    await db.settings.clear();
+    if (db.isOpen()) {
+      db.close();
+    }
   });
 
   it('provides dashboard data and triggers settings fetch', async () => {

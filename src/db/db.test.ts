@@ -1,23 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import 'fake-indexeddb/auto';
-import { db } from './db';
+import { db, dbHooks, setTestDb } from './db';
 
 describe('NutritionTrackerDB UUID Primary Keys', () => {
   beforeEach(async () => {
-    // Open database and clear tables before each test
+    const testDbName = 'NutritionTrackerDB_' + crypto.randomUUID();
+    setTestDb(testDbName);
+    dbHooks.isSyncing = true;
     if (!db.isOpen()) {
       await db.open();
     }
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-    await db.settings.clear();
+    dbHooks.isSyncing = false;
   });
 
   afterEach(async () => {
-    // Clear tables after each test
-    await db.logs.clear();
-    await db.foodDictionary.clear();
-    await db.settings.clear();
+    if (db.isOpen()) {
+      db.close();
+    }
   });
 
   describe('logs table', () => {
