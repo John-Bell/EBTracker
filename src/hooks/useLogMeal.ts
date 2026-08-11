@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { filterSuggestions, shouldShowSuggestions } from '../utils/logMealUtils';
 import type { SuggestionItem } from '../utils/logMealUtils';
+import useStore from '../store/useStore';
 
 export function useLogMeal() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,8 +57,18 @@ export function useLogMeal() {
     setIsManualEntry(false);
   };
 
-  const handleSave = () => {
-    alert(`Saved food: ${itemName || searchQuery || 'Oatmeal'} (${calories || '0'} kcal) for ${mealType}`);
+  const handleSave = async () => {
+    const name = itemName || searchQuery || 'Oatmeal';
+    const kcal = parseInt(calories, 10) || 0;
+
+    await useStore.getState().addFoodLog({
+      name,
+      calories: kcal,
+      mealType,
+    });
+
+    alert(`Saved food: ${name} (${kcal} kcal) for ${mealType}`);
+    window.location.hash = '#/';
   };
 
   return {

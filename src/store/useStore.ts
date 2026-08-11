@@ -103,18 +103,111 @@ const useStore = create<StoreState>((set) => ({
   },
 
   // addFoodLog(log)
-  addFoodLog: async (_log) => {
-    // Implementation to be added later
+  addFoodLog: async (log: { name: string; calories: number; mealType: string; date?: string }) => {
+    try {
+      const date = log.date || new Date().toISOString().split('T')[0];
+      const newLog = {
+        date,
+        type: 'food',
+        synced: false,
+        name: log.name,
+        calories: Number(log.calories),
+        mealType: log.mealType,
+      };
+
+      const insertedId = await db.logs.add(newLog);
+
+      set((state) => {
+        const isDummy = state.foodLogs.some(item => ['1', '2', '3', '4'].includes(item.id));
+        const baseLogs = isDummy ? [] : state.foodLogs;
+        const baseCalories = isDummy ? 0 : state.consumedCalories;
+
+        const addedFoodLog: FoodLog = {
+          id: insertedId as string,
+          name: log.name,
+          calories: Number(log.calories),
+          mealType: log.mealType,
+        };
+
+        return {
+          foodLogs: [...baseLogs, addedFoodLog],
+          consumedCalories: baseCalories + Number(log.calories),
+        };
+      });
+
+      try {
+        const { remoteSyncService } = await import('../db/syncService');
+        remoteSyncService.autoSync();
+      } catch (err) {
+        console.warn('Sync failed to trigger automatically', err);
+      }
+    } catch (error) {
+      console.error('Failed to add food log', error);
+      throw error;
+    }
   },
 
   // addWaterLog(volume)
-  addWaterLog: async (_volume) => {
-    // Implementation to be added later
+  addWaterLog: async (volume: number) => {
+    try {
+      const date = new Date().toISOString().split('T')[0];
+      const newLog = {
+        date,
+        type: 'water',
+        synced: false,
+        volume: Number(volume),
+      };
+
+      await db.logs.add(newLog);
+
+      set((state) => {
+        const isDummy = state.foodLogs.some(item => ['1', '2', '3', '4'].includes(item.id));
+        const baseWater = isDummy ? 0 : state.currentWater;
+
+        return {
+          currentWater: baseWater + Number(volume),
+        };
+      });
+
+      try {
+        const { remoteSyncService } = await import('../db/syncService');
+        remoteSyncService.autoSync();
+      } catch (err) {
+        console.warn('Sync failed to trigger automatically', err);
+      }
+    } catch (error) {
+      console.error('Failed to add water log', error);
+      throw error;
+    }
   },
 
   // fetchTodaySummary(date)
-  fetchTodaySummary: async (_date) => {
-    // Implementation to be added later
+  fetchTodaySummary: async (date: string) => {
+    try {
+      const logs = await db.logs.where('date').equals(date).toArray();
+
+      const foodLogs: FoodLog[] = logs
+        .filter((l) => l.type === 'food')
+        .map((l) => ({
+          id: l.id!,
+          name: l.name || '',
+          calories: l.calories || 0,
+          mealType: l.mealType || '',
+        }));
+      const consumedCalories = foodLogs.reduce((sum, item) => sum + item.calories, 0);
+
+      const waterLogs = logs.filter((l) => l.type === 'water');
+      const currentWater = waterLogs.reduce((sum, item) => sum + (item.volume || 0), 0);
+
+      set({
+        foodLogs,
+        consumedCalories,
+        currentWater,
+      });
+    } catch (error) {
+      console.error('Failed to fetch today summary', error);
+      throw error;
+    }
   },
 
   loadDummyData: () => {
