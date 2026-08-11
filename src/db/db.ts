@@ -15,6 +15,10 @@ export interface Log {
   synced: boolean;
   updatedAt?: number;
   // other fields can be added here...
+  name?: string;
+  calories?: number;
+  mealType?: string;
+  volume?: number;
 }
 
 export interface FoodDictionaryItem {

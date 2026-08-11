@@ -74,7 +74,7 @@ describe('useLogMeal Hook', () => {
     expect(result.current.isManualEntry).toBe(false);
   });
 
-  it('should handle saving with alert', () => {
+  it('should handle saving with alert', async () => {
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     const { result } = renderHook(() => useLogMeal());
 
@@ -84,8 +84,8 @@ describe('useLogMeal Hook', () => {
       result.current.setMealType('Dinner');
     });
 
-    act(() => {
-      result.current.handleSave();
+    await act(async () => {
+      await result.current.handleSave();
     });
 
     expect(alertSpy).toHaveBeenCalledWith('Saved food: Test Food (500 kcal) for Dinner');
