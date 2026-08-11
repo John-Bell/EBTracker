@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { db } from '../db/db';
 
+export interface FoodLog {
+  id: string;
+  name: string;
+  calories: number;
+  mealType: string;
+}
+
 interface StoreState {
   calorieGoal: number;
   waterGoal: number;
@@ -10,6 +17,10 @@ interface StoreState {
   syncStatus: 'connected' | 'disconnected';
   lastSynced: number;
   syncPassphrase?: string;
+
+  currentWater: number;
+  consumedCalories: number;
+  foodLogs: FoodLog[];
 
   setSyncStatus: (status: 'connected' | 'disconnected') => void;
   setLastSynced: (timestamp: number) => void;
@@ -21,6 +32,7 @@ interface StoreState {
   addFoodLog: (log: any) => Promise<void>;
   addWaterLog: (volume: number) => Promise<void>;
   fetchTodaySummary: (date: string) => Promise<void>;
+  loadDummyData: () => void;
 }
 
 const DEFAULT_CALORIE_GOAL = 2000;
@@ -34,6 +46,10 @@ const useStore = create<StoreState>((set) => ({
   headerKey: '',
   syncStatus: 'disconnected',
   lastSynced: 0,
+
+  currentWater: 0,
+  consumedCalories: 0,
+  foodLogs: [],
 
   setSyncStatus: (status) => set({ syncStatus: status }),
   setLastSynced: (timestamp) => set({ lastSynced: timestamp }),
@@ -99,7 +115,23 @@ const useStore = create<StoreState>((set) => ({
   // fetchTodaySummary(date)
   fetchTodaySummary: async (_date) => {
     // Implementation to be added later
+  },
+
+  loadDummyData: () => {
+    set({
+      currentWater: 750,
+      consumedCalories: 1450,
+      foodLogs: [
+        { id: '1', name: 'Oatmeal with Berries', calories: 320, mealType: 'Breakfast' },
+        { id: '2', name: 'Grilled Chicken Salad', calories: 540, mealType: 'Lunch' },
+        { id: '3', name: 'Salmon & Asparagus', calories: 480, mealType: 'Dinner' },
+        { id: '4', name: 'Green Apple', calories: 110, mealType: 'Snacks' }
+      ]
+    });
   }
 }));
+
+// Load dummy data when the store/app initializes
+useStore.getState().loadDummyData();
 
 export default useStore;

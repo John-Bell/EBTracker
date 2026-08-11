@@ -10,6 +10,7 @@ export function Dashboard() {
     strokeDashoffset,
     caloriesLeft,
     caloriePercent,
+    foodLogs,
   } = useDashboard();
 
   return (
@@ -116,68 +117,24 @@ export function Dashboard() {
         >
           <h2 className="px-2 font-label-caps text-on-surface-variant/80 uppercase">Today's Log</h2>
           <div className="bg-surface-container-lowest rounded-xl overflow-hidden ios-shadow">
-            {/* Breakfast */}
-            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="font-label-caps text-primary text-caption uppercase mb-1">Breakfast</p>
-                  <p className="font-body-lg font-semibold text-on-surface">Oatmeal with Berries</p>
+            {foodLogs.map((log, index) => (
+              <div key={log.id}>
+                {index > 0 && <div className="h-[0.5px] bg-outline-variant/30"></div>}
+                <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <p className="font-label-caps text-primary text-caption uppercase mb-1">{log.mealType}</p>
+                      <p className="font-body-lg font-semibold text-on-surface">{log.name}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-body-lg text-on-surface">
+                      {log.calories} <span className="text-caption">kcal</span>
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-body-lg text-on-surface">
-                  320 <span className="text-caption">kcal</span>
-                </p>
-              </div>
-            </div>
-            <div className="h-[0.5px] bg-outline-variant/30"></div>
-
-            {/* Lunch */}
-            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="font-label-caps text-primary text-caption uppercase mb-1">Lunch</p>
-                  <p className="font-body-lg font-semibold text-on-surface">Grilled Chicken Salad</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-body-lg text-on-surface">
-                  540 <span className="text-caption">kcal</span>
-                </p>
-              </div>
-            </div>
-            <div className="h-[0.5px] bg-outline-variant/30"></div>
-
-            {/* Dinner */}
-            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="font-label-caps text-primary text-caption uppercase mb-1">Dinner</p>
-                  <p className="font-body-lg font-semibold text-on-surface">Salmon &amp; Asparagus</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-body-lg text-on-surface">
-                  480 <span className="text-caption">kcal</span>
-                </p>
-              </div>
-            </div>
-            <div className="h-[0.5px] bg-outline-variant/30"></div>
-
-            {/* Snacks */}
-            <div className="px-4 py-3 flex items-center justify-between active:bg-surface-variant/10 transition-colors">
-              <div className="flex items-center gap-4">
-                <div>
-                  <p className="font-label-caps text-primary text-caption uppercase mb-1">Snacks</p>
-                  <p className="font-body-lg font-semibold text-on-surface">Green Apple</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-body-lg text-on-surface">
-                  110 <span className="text-caption">kcal</span>
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </section>
       </main>
