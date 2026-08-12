@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import useStore from '../store/useStore';
+import { db } from '../db/db';
 import { calculateWaterProgress, calculateCalorieProgress } from '../utils/dashboardUtils';
 
 export function useDashboard() {
@@ -10,14 +11,32 @@ export function useDashboard() {
     consumedCalories,
     foodLogs,
     fetchSettings,
+    addWaterLog,
+    fetchTodaySummary,
   } = useStore();
 
   useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+    const init = async () => {
+      await fetchSettings();
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const count = await db.logs.where('date').equals(today).count();
+        if (count > 0) {
+          await fetchTodaySummary(today);
+        }
+      } catch (err) {
+        console.error('Failed to load today summary on mount', err);
+      }
+    };
+    init();
+  }, [fetchSettings, fetchTodaySummary]);
 
   const { strokeDashoffset, waterRatio } = calculateWaterProgress(currentWater, waterGoal);
   const { caloriesLeft, caloriePercent } = calculateCalorieProgress(consumedCalories, calorieGoal);
+
+  const handleAddWater = async (volume: number) => {
+    await addWaterLog(volume);
+  };
 
   return {
     calorieGoal,
@@ -29,5 +48,6 @@ export function useDashboard() {
     caloriesLeft,
     caloriePercent,
     foodLogs,
+    handleAddWater,
   };
 }

@@ -14,6 +14,13 @@ describe('useDashboard Hook', () => {
       await db.open();
     }
     dbHooks.isSyncing = false;
+
+    // Reset store state with default goals and dummy data
+    useStore.setState({
+      calorieGoal: 2000,
+      waterGoal: 2500,
+    });
+    useStore.getState().loadDummyData();
   });
 
   afterEach(async () => {
@@ -56,5 +63,49 @@ describe('useDashboard Hook', () => {
       expect(result.current.caloriesLeft).toBe(1550);
       expect(result.current.caloriePercent).toBe('48');
     });
+  });
+
+  it('allows logging water and updates state and database', async () => {
+    const { result } = renderHook(() => useDashboard());
+
+    // Initially, dummy data is used
+    await waitFor(() => {
+      expect(result.current.currentWater).toBe(750);
+    });
+
+    // Let's add 250ml water
+    await act(async () => {
+      await result.current.handleAddWater(250);
+    });
+
+    // Since we transition from dummy data, the new water is exactly 250
+    await waitFor(() => {
+      expect(result.current.currentWater).toBe(250);
+    });
+
+    // Check database
+    const allLogs = await db.logs.toArray();
+    expect(allLogs.length).toBe(1);
+    expect(allLogs[0].type).toBe('water');
+    expect(allLogs[0].volume).toBe(250);
+
+    // Clear dummy food logs to simulate transition from dummy to active logging
+    await act(async () => {
+      useStore.setState({ foodLogs: [] });
+    });
+
+    // Add another 500ml water
+    await act(async () => {
+      await result.current.handleAddWater(500);
+    });
+
+    await waitFor(() => {
+      expect(result.current.currentWater).toBe(750);
+    });
+
+    const updatedLogs = await db.logs.toArray();
+    expect(updatedLogs.length).toBe(2);
+    expect(updatedLogs.some(log => log.volume === 250)).toBe(true);
+    expect(updatedLogs.some(log => log.volume === 500)).toBe(true);
   });
 });

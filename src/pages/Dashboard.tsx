@@ -11,6 +11,7 @@ export function Dashboard() {
     caloriesLeft,
     caloriePercent,
     foodLogs,
+    handleAddWater,
   } = useDashboard();
 
   return (
@@ -65,11 +66,17 @@ export function Dashboard() {
             </div>
           </div>
           <div className="mt-6 flex w-full gap-3">
-            <button className="flex-1 h-[50px] bg-surface-container-high rounded-xl text-primary font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <button
+              onClick={() => handleAddWater(250)}
+              className="flex-1 h-[50px] bg-surface-container-high rounded-xl text-primary font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
               <span className="material-symbols-outlined text-[20px]">water_drop</span>
               <span className="text-body-sm">+ Glass (250ml)</span>
             </button>
-            <button className="flex-1 h-[50px] bg-surface-container-high rounded-xl text-primary font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <button
+              onClick={() => handleAddWater(500)}
+              className="flex-1 h-[50px] bg-surface-container-high rounded-xl text-primary font-semibold flex items-center justify-center gap-2 active:scale-95 transition-transform"
+            >
               <span className="material-symbols-outlined text-[20px]">local_drink</span>
               <span className="text-body-sm">+ Bottle (500ml)</span>
             </button>
