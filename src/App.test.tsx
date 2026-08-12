@@ -12,7 +12,7 @@ describe('App Routing', () => {
     render(<App />);
     // Check for dashboard content
     expect(screen.getAllByText(/EBTracker/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Oatmeal with Berries/i)).toBeInTheDocument();
+    expect(screen.getByText(/Today's Log/i)).toBeInTheDocument();
   });
 
   it('switches to Settings page when hash changes to #/settings', () => {
@@ -46,7 +46,7 @@ describe('App Routing', () => {
       window.location.hash = '#/';
       window.dispatchEvent(new HashChangeEvent('hashchange'));
     });
-    expect(screen.getByText(/Oatmeal with Berries/i)).toBeInTheDocument();
+    expect(screen.getByText(/Today's Log/i)).toBeInTheDocument();
   });
 
   it('switches to LogMeal page when hash changes to #/log', () => {

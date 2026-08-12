@@ -224,7 +224,4 @@ const useStore = create<StoreState>((set) => ({
   }
 }));
 
-// Load dummy data when the store/app initializes
-useStore.getState().loadDummyData();
-
 export default useStore;
