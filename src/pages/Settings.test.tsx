@@ -113,4 +113,24 @@ describe('Settings Component', () => {
     expect(storedHeaderKey?.value).toBe('secret123');
   });
 
+  it('triggers Clear Local Cache click correctly when confirmed', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+    render(<Settings />);
+
+    const clearBtn = screen.getByText('Clear Local Cache');
+    expect(clearBtn).toBeInTheDocument();
+
+    fireEvent.click(clearBtn);
+
+    expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to clear all local data? This cannot be undone.');
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Local cache cleared successfully.');
+    });
+
+    confirmSpy.mockRestore();
+    alertSpy.mockRestore();
   });
+});
