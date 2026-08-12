@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Settings } from './Settings';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { db, dbHooks, setTestDb } from '../db/db';
 import useStore from '../store/useStore';
 
