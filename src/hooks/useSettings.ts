@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import useStore from '../store/useStore';
-import { db } from '../db/db';
+import { db, dbHooks } from '../db/db';
 
 export function useSettings() {
   const {
@@ -62,15 +62,29 @@ export function useSettings() {
 
   const handleClearCache = async () => {
     if (window.confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
+      const wasSyncing = dbHooks.isSyncing;
       try {
+        dbHooks.isSyncing = true;
         await db.logs.clear();
         await db.foodDictionary.clear();
         await db.settings.clear();
+        await db.deletedRows.clear();
+
+        useStore.setState({
+          currentWater: 0,
+          consumedCalories: 0,
+          foodLogs: [],
+          syncStatus: 'disconnected',
+          lastSynced: 0,
+        });
+
         await fetchSettings();
         alert('Local cache cleared successfully.');
       } catch (e) {
         console.error(e);
         alert('Failed to clear local cache.');
+      } finally {
+        dbHooks.isSyncing = wasSyncing;
       }
     }
   };
