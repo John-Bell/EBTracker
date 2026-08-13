@@ -4,7 +4,10 @@ export function Header({ title }: { title: string }) {
       <div className="flex flex-col px-4 pt-6 pb-2 w-full">
         <div className="flex justify-between items-center mb-1">
           <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
-          <button className="text-primary active:opacity-70 transition-opacity">
+          <button
+            onClick={() => { window.location.hash = '#/history'; }}
+            className="text-primary active:opacity-70 transition-opacity"
+          >
             <span className="material-symbols-outlined">calendar_today</span>
           </button>
         </div>

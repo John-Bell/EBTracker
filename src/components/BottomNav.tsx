@@ -1,4 +1,4 @@
-export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'settings' }) {
+export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'settings' | 'history' }) {
   return (
     <nav className="fixed bottom-0 w-full z-50 pb-safe bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-xl border-t-[0.5px] border-outline-variant/30">
       <div className="flex justify-around items-center h-[83px] px-6 w-full">

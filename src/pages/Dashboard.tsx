@@ -22,7 +22,10 @@ export function Dashboard() {
           <div className="flex items-center gap-3">
             <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
           </div>
-          <button className="active:opacity-70 transition-opacity text-primary dark:text-primary-fixed-dim">
+          <button
+            onClick={() => { window.location.hash = '#/history'; }}
+            className="active:opacity-70 transition-opacity text-primary dark:text-primary-fixed-dim"
+          >
             <span className="material-symbols-outlined text-[28px]">calendar_today</span>
           </button>
         </div>

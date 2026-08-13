@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Dashboard } from './pages/Dashboard';
 import { Settings } from './pages/Settings';
 import { LogMeal } from './pages/LogMeal';
+import { LogHistory } from './pages/LogHistory';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState(() => {
     const hash = window.location.hash;
     if (hash === '#/settings') return 'settings';
     if (hash === '#/log') return 'log';
+    if (hash === '#/history') return 'history';
     return 'dashboard';
   });
 
@@ -18,6 +20,8 @@ function App() {
         setCurrentRoute('settings');
       } else if (hash === '#/log') {
         setCurrentRoute('log');
+      } else if (hash === '#/history') {
+        setCurrentRoute('history');
       } else {
         setCurrentRoute('dashboard');
       }
@@ -33,6 +37,8 @@ function App() {
         <Settings />
       ) : currentRoute === 'log' ? (
         <LogMeal />
+      ) : currentRoute === 'history' ? (
+        <LogHistory />
       ) : (
         <Dashboard />
       )}
