@@ -32,7 +32,10 @@ export function LogMeal() {
           <div className="flex items-center gap-3">
             <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
           </div>
-          <button className="material-symbols-outlined text-primary dark:text-primary-fixed-dim active:opacity-70 transition-opacity active:scale-95 transition-transform duration-150">
+          <button
+            onClick={() => { window.location.hash = '#/history'; }}
+            className="material-symbols-outlined text-primary dark:text-primary-fixed-dim active:opacity-70 transition-opacity active:scale-95 transition-transform duration-150"
+          >
             calendar_today
           </button>
         </div>
