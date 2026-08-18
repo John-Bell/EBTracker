@@ -32,16 +32,16 @@ export function BottomNav({ activeTab }: { activeTab: 'dashboard' | 'log' | 'set
 
         <a
           className={`flex flex-col items-center justify-center transition-all duration-200 ${
-            activeTab === 'settings'
+            activeTab === 'history'
               ? 'text-primary dark:text-secondary-fixed-dim font-semibold'
               : 'text-on-surface-variant/60 dark:text-surface-variant/60 active:bg-surface-variant/10'
           }`}
-          href="#/settings"
+          href="#/history"
         >
-          <span className="material-symbols-outlined" style={activeTab === 'settings' ? { fontVariationSettings: "'FILL' 1" } : undefined}>
-            settings
+          <span className="material-symbols-outlined" style={activeTab === 'history' ? { fontVariationSettings: "'FILL' 1" } : undefined}>
+            calendar_today
           </span>
-          <span className="font-caption text-caption mt-1">Settings</span>
+          <span className="font-caption text-caption mt-1">History</span>
         </a>
       </div>
     </nav>

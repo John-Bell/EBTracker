@@ -33,10 +33,10 @@ export function LogMeal() {
             <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
           </div>
           <button
-            onClick={() => { window.location.hash = '#/history'; }}
+            onClick={() => { window.location.hash = '#/settings'; }}
             className="material-symbols-outlined text-primary dark:text-primary-fixed-dim active:opacity-70 transition-opacity active:scale-95 transition-transform duration-150"
           >
-            calendar_today
+            settings
           </button>
         </div>
       </header>

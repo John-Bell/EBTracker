@@ -57,7 +57,7 @@ describe('LogHistory Component', () => {
     render(<LogHistory />);
 
     expect(screen.getAllByText('EBTracker').length).toBeGreaterThan(0);
-    expect(screen.getByText('History')).toBeInTheDocument();
+    expect(screen.getAllByText('History').length).toBeGreaterThan(0);
     expect(screen.getByText('Wed, 14th Log')).toBeInTheDocument();
   });
 
