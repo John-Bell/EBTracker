@@ -5,10 +5,10 @@ export function Header({ title }: { title: string }) {
         <div className="flex justify-between items-center mb-1">
           <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
           <button
-            onClick={() => { window.location.hash = '#/history'; }}
+            onClick={() => { window.location.hash = '#/settings'; }}
             className="text-primary active:opacity-70 transition-opacity"
           >
-            <span className="material-symbols-outlined">calendar_today</span>
+            <span className="material-symbols-outlined">settings</span>
           </button>
         </div>
         <div className="mt-2 pb-2">

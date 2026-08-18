@@ -23,10 +23,10 @@ export function Dashboard() {
             <h1 className="font-display text-headline-md font-bold text-on-surface dark:text-inverse-on-surface">EBTracker</h1>
           </div>
           <button
-            onClick={() => { window.location.hash = '#/history'; }}
+            onClick={() => { window.location.hash = '#/settings'; }}
             className="active:opacity-70 transition-opacity text-primary dark:text-primary-fixed-dim"
           >
-            <span className="material-symbols-outlined text-[28px]">calendar_today</span>
+            <span className="material-symbols-outlined text-[28px]">settings</span>
           </button>
         </div>
       </header>
