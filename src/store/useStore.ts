@@ -199,10 +199,16 @@ const useStore = create<StoreState>((set) => ({
       const waterLogs = logs.filter((l) => l.type === 'water');
       const currentWater = waterLogs.reduce((sum, item) => sum + (item.volume || 0), 0);
 
-      set({
-        foodLogs,
-        consumedCalories,
-        currentWater,
+      set((state) => {
+        const isDummy = state.foodLogs.some((item) => ['1', '2', '3', '4'].includes(item.id));
+        if (logs.length === 0 && isDummy) {
+          return state;
+        }
+        return {
+          foodLogs,
+          consumedCalories,
+          currentWater,
+        };
       });
     } catch (error) {
       console.error('Failed to fetch today summary', error);

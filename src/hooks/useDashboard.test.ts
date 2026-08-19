@@ -108,4 +108,20 @@ describe('useDashboard Hook', () => {
     expect(updatedLogs.some(log => log.volume === 250)).toBe(true);
     expect(updatedLogs.some(log => log.volume === 500)).toBe(true);
   });
+
+  it('fetches today summary and clears currentWater to 0 when DB logs count is 0', async () => {
+    // Set stale water in store
+    useStore.setState({ currentWater: 500, consumedCalories: 300, foodLogs: [] });
+
+    // Ensure DB has no logs for today
+    const logsCount = await db.logs.count();
+    expect(logsCount).toBe(0);
+
+    const { result } = renderHook(() => useDashboard());
+
+    await waitFor(() => {
+      expect(result.current.currentWater).toBe(0);
+      expect(result.current.consumedCalories).toBe(0);
+    });
+  });
 });

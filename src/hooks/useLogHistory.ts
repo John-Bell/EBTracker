@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '../db/db';
 import type { Log } from '../db/db';
 import { getDaysInWeek } from '../utils/logHistoryUtils';
+import useStore from '../store/useStore';
 
 export function useLogHistory() {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -51,6 +52,12 @@ export function useLogHistory() {
       await db.logs.delete(id);
       await loadLogs();
       try {
+        const today = new Date().toISOString().split('T')[0];
+        await useStore.getState().fetchTodaySummary(today);
+      } catch (err) {
+        console.error('Failed to update today summary in store', err);
+      }
+      try {
         const { remoteSyncService } = await import('../db/syncService');
         remoteSyncService.autoSync();
       } catch (err) {
@@ -94,6 +101,12 @@ export function useLogHistory() {
       }
       setEditingLog(null);
       await loadLogs();
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        await useStore.getState().fetchTodaySummary(today);
+      } catch (err) {
+        console.error('Failed to update today summary in store', err);
+      }
       try {
         const { remoteSyncService } = await import('../db/syncService');
         remoteSyncService.autoSync();
