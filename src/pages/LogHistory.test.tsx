@@ -9,6 +9,8 @@ vi.mock('../hooks/useLogHistory', () => ({
 
 describe('LogHistory Component', () => {
   const mockSetSelectedDate = vi.fn();
+  const mockGoToPreviousWeek = vi.fn();
+  const mockGoToNextWeek = vi.fn();
   const mockHandleDeleteLog = vi.fn();
   const mockStartEdit = vi.fn();
   const mockCancelEdit = vi.fn();
@@ -21,6 +23,8 @@ describe('LogHistory Component', () => {
   const baseMockHookValue = {
     selectedDate: '2024-08-14',
     setSelectedDate: mockSetSelectedDate,
+    goToPreviousWeek: mockGoToPreviousWeek,
+    goToNextWeek: mockGoToNextWeek,
     waterLogs: [],
     mealLogs: [],
     days: [
@@ -78,6 +82,28 @@ describe('LogHistory Component', () => {
     fireEvent.click(monButton!);
 
     expect(mockSetSelectedDate).toHaveBeenCalledWith('2024-08-12');
+  });
+
+  it('renders week navigation and handles clicking previous and next', () => {
+    vi.mocked(useLogHistory).mockReturnValue(baseMockHookValue as any);
+
+    render(<LogHistory />);
+
+    // Check month and year are rendered based on selectedDate
+    expect(screen.getByText('August 2024')).toBeInTheDocument();
+
+    // Find previous and next buttons
+    const prevButton = screen.getByText('chevron_left').closest('button');
+    const nextButton = screen.getByText('chevron_right').closest('button');
+
+    expect(prevButton).toBeInTheDocument();
+    expect(nextButton).toBeInTheDocument();
+
+    fireEvent.click(prevButton!);
+    expect(mockGoToPreviousWeek).toHaveBeenCalled();
+
+    fireEvent.click(nextButton!);
+    expect(mockGoToNextWeek).toHaveBeenCalled();
   });
 
   it('renders empty logs state when there are no logs', () => {
