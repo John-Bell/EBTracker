@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import useStore from '../store/useStore';
-import { db } from '../db/db';
 import { calculateWaterProgress, calculateCalorieProgress } from '../utils/dashboardUtils';
 
 export function useDashboard() {
@@ -20,10 +19,7 @@ export function useDashboard() {
       await fetchSettings();
       try {
         const today = new Date().toISOString().split('T')[0];
-        const count = await db.logs.where('date').equals(today).count();
-        if (count > 0) {
-          await fetchTodaySummary(today);
-        }
+        await fetchTodaySummary(today);
       } catch (err) {
         console.error('Failed to load today summary on mount', err);
       }

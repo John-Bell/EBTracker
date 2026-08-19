@@ -137,6 +137,41 @@ describe('useLogHistory Hook', () => {
     unmount();
   });
 
+  it('updates store state when deleting a water log entry for today', async () => {
+    const today = new Date().toISOString().split('T')[0];
+
+    const logId = (await db.logs.add({
+      date: today,
+      type: 'water',
+      synced: false,
+      volume: 500,
+      updatedAt: Date.now(),
+    })) as string;
+
+    useStore.setState({ currentWater: 500 });
+
+    const { result, unmount } = renderHook(() => useLogHistory());
+
+    await waitFor(() => {
+      expect(result.current.waterLogs).toHaveLength(1);
+    });
+
+    dbHooks.isSyncing = true;
+
+    await act(async () => {
+      await result.current.handleDeleteLog(logId);
+    });
+
+    dbHooks.isSyncing = false;
+
+    await waitFor(() => {
+      expect(result.current.waterLogs).toHaveLength(0);
+      expect(useStore.getState().currentWater).toBe(0);
+    });
+
+    unmount();
+  });
+
   it('can edit a food log entry', async () => {
     const date = '2024-08-14';
 
