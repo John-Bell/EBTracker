@@ -16,6 +16,22 @@ export function useLogHistory() {
   const [editMealType, setEditMealType] = useState('Breakfast');
   const [editVolume, setEditVolume] = useState('');
 
+  const goToPreviousWeek = () => {
+    setSelectedDate((prevDate) => {
+      const date = new Date(prevDate + 'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate() - 7);
+      return date.toISOString().split('T')[0];
+    });
+  };
+
+  const goToNextWeek = () => {
+    setSelectedDate((prevDate) => {
+      const date = new Date(prevDate + 'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate() + 7);
+      return date.toISOString().split('T')[0];
+    });
+  };
+
   const loadLogs = async () => {
     try {
       const data = await db.logs.where('date').equals(selectedDate).toArray();
@@ -96,6 +112,8 @@ export function useLogHistory() {
   return {
     selectedDate,
     setSelectedDate,
+    goToPreviousWeek,
+    goToNextWeek,
     waterLogs,
     mealLogs,
     days,

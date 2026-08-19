@@ -18,6 +18,8 @@ export function LogHistory() {
   const {
     selectedDate,
     setSelectedDate,
+    goToPreviousWeek,
+    goToNextWeek,
     waterLogs,
     mealLogs,
     days,
@@ -43,6 +45,23 @@ export function LogHistory() {
       <main className="w-full max-w-md mx-auto">
         {/* Calendar Strip */}
         <div className="bg-surface border-b-[0.5px] border-outline-variant/30 py-4 shadow-[0px_2px_8px_rgba(0,0,0,0.02)] relative z-30">
+          <div className="flex items-center justify-between px-margin-mobile mb-4">
+            <button
+              onClick={goToPreviousWeek}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-variant/20 active:scale-95 transition-transform"
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <span className="font-headline-sm text-on-surface font-semibold">
+              {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </span>
+            <button
+              onClick={goToNextWeek}
+              className="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-variant/20 active:scale-95 transition-transform"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
           <div className="flex overflow-x-auto no-scrollbar px-margin-mobile gap-2 items-center">
             {days.map((day) => {
               const isSelected = day.dateStr === selectedDate;
